@@ -19,6 +19,8 @@ runcmd:
   - usermod -a -G docker ec2-user
   - chown 1001:1001 /data
   - yum install -y https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+  - percona-release setup -y tools
+  - yum -y install percona-toolkit netdata fireqos
   - yum -y install percona-xtradb-cluster-full
   - percona-release setup -y pmm2-client
   - yum -y install pmm2-client
@@ -29,7 +31,7 @@ runcmd:
   - chmod +x /root/init-mysql.sh
   - bash /root/init-mysql.sh
   - timeout 50 bash -c 'until curl --insecure -I https://${pmm_server_endpoint}; do sleep 3; done'
-  - pmm-admin config --metrics-mode=push --force --server-insecure-tls --server-url='https://admin:${pmm_password}@${pmm_server_endpoint}' ${fqdn} generic ${name}
+  - pmm-admin config --region=us-west-1 --az=us-west-1b --metrics-mode=push --force --server-insecure-tls --server-url='https://admin:${pmm_password}@${pmm_server_endpoint}' ${fqdn} generic ${name}
   - pmm-admin add mysql --metrics-mode=push --username=root --password=${mysql_root_password} --cluster='pxc-80-cluster' --replication-set='pxc-80-cluster' --environment='Prod' --query-source=perfschema --service-name=${name}-mysql
 
 mounts:

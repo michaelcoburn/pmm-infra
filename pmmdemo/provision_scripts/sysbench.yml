@@ -8,7 +8,7 @@ repo_upgrade: all
 runcmd:
   - yum install -y https://repo.percona.com/yum/percona-release-latest.noarch.rpm
   - percona-release enable tools release
-  - yum -y install pmm2-client sysbench
+  - yum -y install pmm2-client sysbench netdata fireqos
   - mkdir /etc/sysbench
   - chmod +x /etc/sysbench/exec_sysbench.sh
   - systemctl enable sysbench.percona.server.80

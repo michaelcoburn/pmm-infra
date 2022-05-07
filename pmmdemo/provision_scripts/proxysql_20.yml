@@ -7,12 +7,14 @@ repo_upgrade: all
 
 runcmd:
   - yum install -y https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+  - percona-release setup -y tools
+  - yum -y install percona-toolkit netdata fireqos
   - yum install -y proxysql2
   - systemctl start proxysql
   - percona-release setup -y pmm2-client
   - yum -y install pmm2-client
-  - pmm-admin config --metrics-mode=push --force --server-insecure-tls --server-url='https://admin:${pmm_admin_password}@${pmm_server_endpoint}' ${fqdn} generic ${name}
-  - pmm-admin add proxysql --username=admin --password='${proxysql_admin_password}' --server-url='https://admin:${pmm_admin_password}@${pmm_server_endpoint}' --server-insecure-tls
+  - pmm-admin config --region=us-west-1 --az=us-west-1b --metrics-mode=push --force --server-insecure-tls --server-url='https://admin:${pmm_admin_password}@${pmm_server_endpoint}' ${fqdn} generic ${name}
+  - pmm-admin add proxysql --environment=Prod --cluster=ps-80-cluster --replication-set=ps-80-cluster --username=admin --password='${proxysql_admin_password}' --server-url='https://admin:${pmm_admin_password}@${pmm_server_endpoint}' --server-insecure-tls
 
 # TODO replace to admin-stats_credentials user
 

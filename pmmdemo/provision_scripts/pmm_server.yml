@@ -14,6 +14,8 @@ packages:
   - jq
   - docker
   - git
+  - fireqos
+  - netdata
 
 bootcmd:
  - while [[ ! -b $(readlink -f /dev/nvme1n1) ]]; do echo "waiting for the disk..."; sleep 3; done
@@ -29,7 +31,7 @@ runcmd:
   - usermod  -a -G docker ec2-user
   - curl -fsSL https://www.percona.com/get/pmm -o /tmp/pmm.sh
   - sed -i -e 's/:443/:443 -p 80:80/g' /tmp/pmm.sh
-  - /bin/bash /tmp/pmm.sh --repo "perconalab/pmm-server" --tag dev-latest
+  - /bin/bash /tmp/pmm.sh
   - sleep 20s
   - docker exec pmm-server change-admin-password ${pmm_admin_pass}
   - "echo '${pmm_admin_pass}' > /root/pmm-admin-password"
@@ -69,7 +71,7 @@ write_files:
             option: domain
             value: ${full_domain}
 
-        - name: Install, configure, and start Apache
+        - name: Configure oauth
           when: ${oauth_enable}
           block:
           # TODO use loop instead block here
