@@ -31,6 +31,8 @@ runcmd:
   - echo '!includedir /etc/my.cnf.d/' >> /etc/my.cnf
   - chown mysql:mysql /data/
   - if [ "${name}" == "percona-server-80-1" ]; then mv /tmp/replica-config.cnf /etc/my.cnf.d/; fi
+  - systemctl enable fireqos.service
+  - systemctl start fireqos.service
   - systemctl enable mysqld.service
   - systemctl start mysqld.service
   - systemctl status mysqld.service;
@@ -41,6 +43,54 @@ runcmd:
   - pmm-admin add mysql --metrics-mode=push --username=root --password='${mysql_root_password}' --cluster='ps-80-cluster' --replication-set='ps-80-cluster' --environment='Prod' --query-source=perfschema --service-name=${name}-mysql
 
 write_files:
+- path: /etc/firehol/fireqos.conf
+  content: |
+    DEVICE=eth0
+    INPUT_SPEED=1000000kbit
+    OUTPUT_SPEED=1000000kbit
+    #LINKTYPE="adsl local pppoe-llc"
+
+    interface $DEVICE world-in input rate $INPUT_SPEED $LINKTYPE # removed balanced
+      class wsrep_messages commit 100kbit              # committed traffic
+          match tcp port 4567
+
+      class wrep_ist commit 20%           # committed traffic
+          match tcp port 4568
+     
+      class wsrep_sst commit 200kbit          # committed traffic
+          match tcp port 4444
+
+      class mysql_client commit 20%                  # committed traffic
+          match tcp port 3306
+
+      class proxysql_client commit 30%               # committed traffic
+          match tcp port 6033 
+
+      class mysql_admin                          # 1% is the default
+          match tcp port 33060
+
+      class default                          # 1% is the default
+
+    interface $DEVICE world-out output rate $OUTPUT_SPEED $LINKTYPE # removed balanced
+      class wsrep_messages commit 100kbit              # committed traffic
+          match tcp port 4567
+
+      class wrep_ist commit 20%           # committed traffic
+          match tcp port 4568
+     
+      class wsrep_sst commit 200kbit          # committed traffic
+          match tcp port 4444
+
+      class mysql_client commit 20%                  # committed traffic
+          match tcp port 3306
+
+      class proxysql_client commit 30%               # committed traffic
+          match tcp port 6033 
+
+      class mysql_admin                          # 1% is the default
+          match tcp port 33060
+
+      class default                          # 1% is the default
 - path: /root/.my.cnf
   content: |
     [client]
