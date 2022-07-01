@@ -6,7 +6,7 @@ resource "aws_instance" "ec2" {
   vpc_security_group_ids      = var.security_groups
   user_data                   = var.user_data
 
-  key_name = data.aws_key_pair.michael-coburn-terraform-user
+  key_name = data.aws_key_pair.michael-coburn-terraform-user.key_name
 
   root_block_device {
     volume_type = var.root_disk_type
