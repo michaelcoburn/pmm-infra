@@ -58,12 +58,12 @@ data "template_file" "percona_server_80_user_data" {
     name                      = "${local.percona_server_80_name}-${count.index}"
     fqdn                      = "${local.percona_server_80_name}-${count.index}.${aws_route53_zone.demo_local.name}"
     index                     = "${count.index}"
-    pmm_password              = random_password.pmm_admin_pass.result
-    mysql_root_password       = random_password.mysql80_root_password.result
-    mysql_replica_password    = random_password.mysql80_replica_password.result
-    mysql_sysbench_password   = random_password.mysql80_sysbench_password.result
+    pmm_password              = "Percona1!"
+    mysql_root_password       = "Percona1!"
+    mysql_replica_password    = "Percona1!"
+    mysql_sysbench_password   = "Percona1!"
     pmm_server_endpoint       = local.pmm_server_endpoint
-    proxysql_monitor_password = random_password.proxysql_monitor.result
+    proxysql_monitor_password = "Percona1!"
   }
 }
 
@@ -73,4 +73,19 @@ module "percona_server_80_disk" {
   disk_name   = "percona-server-80"
   disk_size   = "256"
   instance_id = module.percona_server_80[count.index].instance_id
+}
+
+data "aws_ami" "amazon-linux-2" {
+ most_recent = true
+ owners = ["amazon"]
+
+ filter {
+   name   = "owner-alias"
+   values = ["amazon"]
+ }
+
+ filter {
+   name   = "name"
+   values = ["amzn2-ami-hvm*"]
+ }
 }

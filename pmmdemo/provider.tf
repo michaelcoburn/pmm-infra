@@ -28,6 +28,7 @@ provider "aws" {
     tags = {
       Terraform       = "Yes"
       iit-billing-tag = "michael.coburn@percona.com"
+      Event = "PL_Austin_2022"
     }
   }
 }

@@ -39,11 +39,11 @@ data "template_file" "percona_xtradb_cluster_80_user_data" {
     name                      = "${local.percona_xtradb_cluster_80_name}-${count.index}"
     fqdn                      = "${local.percona_xtradb_cluster_80_name}-${count.index}.${aws_route53_zone.demo_local.name}"
     index                     = "${count.index}"
-    pmm_password              = random_password.pmm_admin_pass.result
-    mysql_root_password       = random_password.percona_xtradb_cluster_80_root_password.result
-    mysql_sysbench_password   = random_password.percona_xtradb_cluster_80_sysbench_password.result
+    pmm_password              = "Percona1!"
+    mysql_root_password       = "Percona1!"
+    mysql_sysbench_password   = "Percona1!"
     pmm_server_endpoint       = local.pmm_server_endpoint
-    proxysql_monitor_password = random_password.proxysql_monitor.result
+    proxysql_monitor_password = "Percona1!"
   }
 }
 
