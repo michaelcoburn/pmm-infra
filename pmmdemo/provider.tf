@@ -18,7 +18,7 @@ terraform {
   backend "s3" {
     bucket = "michael.coburn-terraform"
     key    = "pmm.tfstate"
-    region = "us-wast-1"
+    region = "us-west-1"
   }
 }
 
