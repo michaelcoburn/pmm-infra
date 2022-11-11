@@ -14,16 +14,16 @@ terraform {
   backend "s3" {
     bucket = "percona-terraform"
     key    = "pmm.tfstate"
-    region = "us-east-1"
+    region = "us-west-1"
   }
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = "us-west-1"
   default_tags {
     tags = {
       Terraform       = "Yes"
-      iit-billing-tag = "pmm"
+      iit-billing-tag = "michael.coburn@percona.com"
     }
   }
 }

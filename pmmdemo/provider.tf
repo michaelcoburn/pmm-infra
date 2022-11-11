@@ -16,18 +16,18 @@ terraform {
   required_version = "~> 1.2.8"
 
   backend "s3" {
-    bucket = "percona-terraform"
+    bucket = "michael.coburn-terraform"
     key    = "pmmdemo.tfstate"
-    region = "us-east-1"
+    region = "us-west-1"
   }
 }
 
 provider "aws" {
-  region = "us-east-1"
+  region = "us-west-1"
   default_tags {
     tags = {
       Terraform       = "Yes"
-      iit-billing-tag = "pmm-demo"
+      iit-billing-tag = "michael.coburn@percona.com"
     }
   }
 }
