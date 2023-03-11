@@ -6,3 +6,6 @@
 *.out
 *.json
 utils/
+start.sh
+plan.sh
+pmm-infra.code-workspace
