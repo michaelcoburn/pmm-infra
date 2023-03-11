@@ -1,23 +1,30 @@
 ---
-- name: 'Provision Agent'
+- name: "Provision Agent"
   hosts: default
   become: true
   vars:
-    docker_compose_version: "2.6.0"
+    docker_compose_version: "2.14.2"
     kubectl_version: "1.22.9"
-    doctl_version: "1.76.2"
-    node_version: "16.15.1"
+    doctl_version: "1.91.0"
+    node_version: "16.18.1"
 
   tasks:
-    - name: set vm name
+    - name: Detect vm architecture
       set_fact:
         # Alternative architecture name just because we never can have only one name in computers
         ansible_architecture_alt: "{% if ansible_architecture == 'x86_64' %}amd64{% elif ansible_architecture == 'aarch64' %}arm64{% else %}none{% endif %}"
 
-    - name: Add hashicorp repository to yum
+    - name: Add hashicorp repository
       get_url:
         url: https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
         dest: /etc/yum.repos.d/hashicorp.repo
+      when: ansible_facts['distribution'] == "Amazon"
+
+    - name: Add hashicorp repository
+      get_url:
+        url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+        dest: /etc/yum.repos.d/hashicorp.repo
+      when: ansible_facts['distribution'] != "Amazon"
 
     - name: Enable epel repo
       command: amazon-linux-extras install -y epel
@@ -30,16 +37,15 @@
       when: ansible_facts['distribution'] != "Amazon"
       # TODO maybe we can use the same repo for both
 
-    - name: Upgrade system
+    - name: Upgrade OS packages
       yum:
-        name: '*'
+        name: "*"
         state: latest
 
     - name: Install packages
       package:
         name:
           - docker
-          - java-1.8.0-openjdk
           - git
           - jq
           - gettext
@@ -62,29 +68,41 @@
           - xmlstarlet
         state: present
 
+    - name: Install Java11 on DO
+      package:
+        name: java-11-openjdk
+        state: present
+      when: ansible_facts['distribution'] != "Amazon"
+
+    - name: Install Java11 on AWS
+      command: amazon-linux-extras install -y java-openjdk11
+      when: ansible_facts['distribution'] == "Amazon"
+
     - name: Install docker-compose
       get_url:
         url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-{{ ansible_architecture }}"
         dest: /usr/local/bin/docker-compose
-        mode: 'u+x,g+x,o+x'
+        mode: "u+x,g+x,o+x"
 
     - name: Install kubectl
       get_url:
         url: https://storage.googleapis.com/kubernetes-release/release/v{{ kubectl_version }}/bin/linux/{{ ansible_architecture_alt }}/kubectl
         dest: /usr/local/bin/kubectl
-        mode: 'u+x,g+x,o+x'
+        mode: "u+x,g+x,o+x"
 
     - name: Install lacework
       get_url:
         url: "https://github.com/lacework/lacework-vulnerability-scanner/releases/latest/download/lw-scanner-linux-{{ ansible_architecture_alt }}"
         dest: /usr/local/bin/lw-scanner
-        mode: 'u+x,g+x,o+x'
+        mode: "u+x,g+x,o+x"
 
-    - name: Install some software
+    - name: Install other software
       package:
         name:
           - chromium
-      when: ansible_architecture == "x86_64" # TODO ARM doesn't have chromium package
+        state: present
+      when: ansible_architecture == "x86_64"
+      # NOTE: no chromium package for arm64
 
     - name: Install doctl client for digital ocean
       get_url:
@@ -93,46 +111,58 @@
 
     - name: Unarchive a file with doctl
       unarchive:
-        src:  /tmp/doctl.tar.gz
-        dest: /usr/local/bin/
+        src: /tmp/doctl.tar.gz
+        dest: /usr/local/bin
         remote_src: yes
-        mode: 'u+x,g+x,o+x'
+        mode: "u+x,g+x,o+x"
+        group: "{{ (ansible_facts['distribution'] == 'Amazon') | ternary('ec2-user', 'root') }}"
+        owner: "{{ (ansible_facts['distribution'] == 'Amazon') | ternary('ec2-user', 'root') }}"
+
+    - name: Instal yq
+      get_url:
+        url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        dest: /usr/bin/yq
+        mode: "555"
+        group: "{{ (ansible_facts['distribution'] == 'Amazon') | ternary('ec2-user', 'root') }}"
+        owner: "{{ (ansible_facts['distribution'] == 'Amazon') | ternary('ec2-user', 'root') }}"
 
     - name: Install Python modules
       pip:
         name: "{{ item }}"
-      loop:
+      loop: # Lookup versions at: https://pypi.org/search/
         - pyaml==21.10.1
-        - GitPython==3.1.27
-        - PyGithub==1.55
+        - GitPython==3.1.29
+        - PyGithub==1.57
         - python-digitalocean==1.17.0
-        - docker==5.0.3
-        - linode-cli==5.19.0
+        - docker==6.0.1
+        - linode-cli==5.27.2
       when: ansible_facts['distribution'] == "Amazon"
-
 
     - name: Install virtual box (only for digital ocean)
       block:
-      - name: Add base repository for VirtualBox
-        yum_repository:
-          name: virtualbox
-          description: VirtualBox
-          baseurl: 'http://download.virtualbox.org/virtualbox/rpm/el/$releasever/$basearch'
-          gpgcheck: true
-          gpgkey: https://www.virtualbox.org/download/oracle_vbox.asc
-          enabled: true
-          state: present
+        - name: Add base repository for VirtualBox
+          yum_repository:
+            name: virtualbox
+            description: VirtualBox
+            baseurl: "http://download.virtualbox.org/virtualbox/rpm/el/$releasever/$basearch"
+            gpgcheck: true
+            gpgkey: https://www.virtualbox.org/download/oracle_vbox.asc
+            enabled: true
+            state: present
 
-      - name: Install Virtualbox
-        yum:
-          state: present
-          name: VirtualBox-5.2
+        - name: Install packages for virtualization
+          yum:
+            state: present
+            name: "{{ item }}"
+          loop:
+            - VirtualBox-6.1
+            - vagrant
 
-      - name: Reboot to the latest kernel
-        reboot:
-          reboot_timeout: 1200
-      - name: Recompile kernel
-        command: /sbin/vboxconfig
+        - name: Reboot to the latest kernel
+          reboot:
+            reboot_timeout: 1200
+        - name: Recompile kernel
+          command: /sbin/vboxconfig
       when: ansible_facts['distribution'] != "Amazon"
 
     - name: Copy docker daemon config
@@ -140,27 +170,29 @@
         src: daemon.json
         dest: /etc/docker/daemon.json
 
-    - name: Download and unarchive AWS installer
-      unarchive:
-        src: https://awscli.amazonaws.com/awscli-exe-linux-{{ ansible_architecture }}.zip
-        dest: /tmp
-        remote_src: yes
-
-    - name: Install awscl
-      shell: /tmp/aws/install
-
     - name: Enable Docker service
       systemd:
         name: docker.service
         state: started
         enabled: yes
 
-    - name: Add ec2-user user to "docker" group
-      user:
-        name: "ec2-user"
-        groups:
-          - "docker"
-        append: yes
+    - name: Install AWS CLI
+      block:
+        - name: Download and unarchive AWS installer
+          unarchive:
+            src: https://awscli.amazonaws.com/awscli-exe-linux-{{ ansible_architecture }}.zip
+            dest: /tmp
+            remote_src: yes
+
+        - name: Run the install command
+          shell: /tmp/aws/install
+
+        - name: Add ec2-user user to "docker" group
+          user:
+            name: "ec2-user"
+            groups:
+              - "docker"
+            append: yes
       when: ansible_facts['distribution'] == "Amazon"
 
     - name: Pull and cache docker images
@@ -176,8 +208,8 @@
         - ubuntu:bionic
         - ubuntu:focal
         - rockylinux:8
+        - oraclelinux:9
       when: ansible_facts['distribution'] == "Amazon"
-
 
     - name: Turn off swap
       sysctl:
@@ -293,12 +325,6 @@
         regexp: "^UUID={{ disk_uuid.stdout }}"
         line: "UUID={{ disk_uuid.stdout }}     /           xfs    defaults,noatime,nobarrier,discard  1   1"
       when: ansible_facts['distribution'] == "Amazon"
-
-    - name: Add vbox-01.ci.percona.com to /etc/hosts
-      lineinfile:
-        dest: /etc/hosts
-        line: "10.30.6.220 vbox-01.ci.percona.com"
-        state: present
 
     - name: Add repo.ci.percona.com to /etc/hosts
       lineinfile:

@@ -1,4 +1,11 @@
 .terraform/
 .terraform.lock.hcl
 *.tfvars
+*.tfstate
 .envrc
+*.out
+*.json
+utils/
+start.sh
+plan.sh
+pmm-infra.code-workspace

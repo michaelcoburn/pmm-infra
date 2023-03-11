@@ -1,8 +1,8 @@
 locals {
-  mongo_cluster_name      = "mongo-42"
-  provision_script_shard  = "provision_scripts/mongo_42/shard.yml"
-  provision_script_cfg    = "provision_scripts/mongo_42/cfg.yml"
-  provision_script_mongos = "provision_scripts/mongo_42/mongos.yml"
+  mongo_cluster_name      = "mongo-60"
+  provision_script_shard  = "provision_scripts/mongo_60/shard.yml"
+  provision_script_cfg    = "provision_scripts/mongo_60/cfg.yml"
+  provision_script_mongos = "provision_scripts/mongo_60/mongos.yml"
 }
 
 
@@ -46,6 +46,11 @@ variable "pmm_password" {
   description = "Admin password for PMM Server"
 }
 
+variable "mongodb_ycsb_password" {
+  type        = string
+  description = "YCSB password for mongos"
+}
+
 variable "route53_name" {
   type        = string
   description = "Route53 zone name"
@@ -75,5 +80,3 @@ variable "mongo_config_disk_size" {
   description = "Size of config instance of Mongo cluster"
   default     = 16
 }
-
-
