@@ -8,7 +8,8 @@ resource "aws_ebs_volume" "data_disk" {
   }
 
   tags = {
-    "Name" = "pmmdemo-${var.disk_name}",
+    "Name" = "michael.coburn-${var.disk_name}",
+    "iit-billing-tag" ="michael.coburn@percona.com",
   }
 }
 

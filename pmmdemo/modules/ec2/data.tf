@@ -14,6 +14,6 @@ data "aws_ami" "amazon_linux_2" {
   owners = ["amazon"]
 }
 
-data "aws_key_pair" "pmm-demo" {
-  key_name = "pmm-demo"
+data "aws_key_pair" "michael-coburn-terraform-user" {
+  key_name = "michael-coburn-terraform-user"
 }
