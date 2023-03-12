@@ -76,7 +76,7 @@ write_files:
       pgsql-host=postgres-13
       pgsql-port=5432
       pgsql-user=sysbench
-      pgsql-password=${postgres_sysbench_password}
+      pgsql-password=
       psql-db=sbtest
       rate=0
       report-interval=10
