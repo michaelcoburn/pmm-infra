@@ -30,9 +30,15 @@ their counterparts for different operating systems given that these tools or CLI
 To prepare for a successul launch of pmmdemo infrastructure, please follow the instructions below:
 
 1. Create an S3 bucket `percona-terraform`, which will be used to store intermediary terraform state.
+```
+aws s3api create-bucket --bucket percona-terraform
+```
 2. Create an SSH key `pmm-demo`, which will be used to connect from outside to the bastion host. The bastion host
    is one entry point from which you can connect to other hosts. Apart from the bastion, all other hosts do not
    expose public IP addresses.
+```
+aws ec2 create-key-pair --key-type ed25519 --key-name pmm-demo --key-format pem  --output text > ~/.ssh/pmm-demo.pem
+```
 3. Create a file `pmmdemo/terraform.tfvars` and provide values to variables defined in `vars.tf`. Minimal configuration example:
    ```
    pmm_domain = "pmmdemo.percona.net"
