@@ -39,7 +39,7 @@ resource "aws_subnet" "pmmdemo_public" {
 
 resource "aws_subnet" "pmmdemo_private" {
   vpc_id            = aws_vpc.pmmdemo.id
-  availability_zone = "us-east-1f"
+  availability_zone = "us-west-1b"
   cidr_block        = "10.0.2.0/24"
 
   tags = {
@@ -49,7 +49,7 @@ resource "aws_subnet" "pmmdemo_private" {
 
 resource "aws_subnet" "pmmdemo_private_a" {
   vpc_id            = aws_vpc.pmmdemo.id
-  availability_zone = "us-east-1a"
+  availability_zone = "us-west-1f"
   cidr_block        = "10.0.3.0/24"
 
   tags = {
