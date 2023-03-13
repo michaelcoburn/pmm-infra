@@ -37,6 +37,7 @@ write_files:
     content: |
       Host *
           User ec2-user
+          StrictHostKeyChecking no
   - path: /etc/nginx.conf
     content: |
       user  nginx;
