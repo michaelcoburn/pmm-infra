@@ -22,7 +22,7 @@ runcmd:
   - systemctl enable ycsb.mongodb60
   - systemctl start ycsb.mongodb60
   - timeout 50 bash -c 'until curl --insecure -I https://${pmm_server_endpoint}; do sleep 3; done'
-  - pmm-admin config --metrics-mode=push --force --server-insecure-tls --server-url='https://admin:${pmm_admin_password}@${pmm_server_endpoint}' ${fqdn} generic ${name}
+  - pmm-admin config --region=us-west-1 --az=us-west-1b --metrics-mode=push --force --server-insecure-tls --server-url='https://admin:${pmm_admin_password}@${pmm_server_endpoint}' ${fqdn} generic ${name}
 
 write_files:
   - path: /etc/ycsb/shard.js
