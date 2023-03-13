@@ -37,7 +37,11 @@ write_files:
     content: |
       Host *
           User ec2-user
-          StrictHostKeyChecking no
+          StrictHostKeyChecking no  
+  - path: /home/ec2-user/.ssh/config
+    content: |
+      Host *
+          StrictHostKeyChecking no          
   - path: /etc/nginx.conf
     content: |
       user  nginx;
