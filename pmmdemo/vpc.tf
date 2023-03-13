@@ -1,7 +1,7 @@
 resource "aws_vpc" "pmmdemo" {
   cidr_block = "10.0.0.0/16"
   tags = {
-    "Name" = local.environment_name,
+    "Name" = "pmmdemo-vpc",
   }
   enable_dns_hostnames = true
 }
@@ -15,7 +15,7 @@ resource "aws_route_table" "ig_pmmdemo" {
   }
 
   tags = {
-    "Name" = local.environment_name,
+    "Name" = "pmmdemo-route-table-igw",
   }
 }
 
@@ -33,7 +33,7 @@ resource "aws_subnet" "pmmdemo_public" {
   map_public_ip_on_launch = true
 
   tags = {
-    "Name" = local.environment_name,
+    "Name" = "pmmdemo_public",
   }
 }
 
@@ -43,7 +43,7 @@ resource "aws_subnet" "pmmdemo_private" {
   cidr_block        = "10.0.2.0/24"
 
   tags = {
-    "Name" = local.environment_name,
+    "Name" = "pmmdemo_private",
   }
 }
 
@@ -53,7 +53,7 @@ resource "aws_subnet" "pmmdemo_private_a" {
   cidr_block        = "10.0.3.0/24"
 
   tags = {
-    "Name" = local.environment_name,
+    "Name" = "pmmdemo_private_a",
   }
 }
 
@@ -62,7 +62,7 @@ resource "aws_internet_gateway" "pmmdemo" {
   vpc_id = aws_vpc.pmmdemo.id
 
   tags = {
-    "Name" = local.environment_name,
+    "Name" = "pmmdemo-igw",
   }
 }
 
@@ -102,7 +102,7 @@ resource "aws_nat_gateway" "external_nat_gateway" {
   subnet_id     = aws_subnet.pmmdemo_public.id
 
   tags = {
-    "Name" = local.environment_name,
+    "Name" = "pmmdemo-natgw",
   }
 
   depends_on = [aws_internet_gateway.pmmdemo]
@@ -117,7 +117,7 @@ resource "aws_route_table" "nat_route_table" {
   }
 
   tags = {
-    "Name" = local.environment_name,
+    "Name" = "pmmdemo-nat-route-table",
   }
 }
 
@@ -143,6 +143,9 @@ resource "aws_route53_zone" "demo_local" {
 resource "aws_vpc_dhcp_options" "additional_domain" {
   domain_name         = "ec2.internal ${aws_route53_zone.demo_local.name}"
   domain_name_servers = ["127.0.0.1", "10.0.0.2"]
+  tags = {
+    "Name" = "pmmdemo-dhcp-opts",
+  }
 }
 
 resource "aws_vpc_dhcp_options_association" "vpc_dhcp_association" {
